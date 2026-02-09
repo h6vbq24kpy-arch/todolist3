@@ -66,15 +66,26 @@
     const deleteBtn = document.getElementById("deleteBtn");
 
     deleteBtn.addEventListener("click", () => {
-      const tasks = document.querySelectorAll("#taskList li");
+      const items = document.querySelectorAll("#taskList li");
 
-      tasks.forEach(list => {
-        const checkboxes = list.querySelector("input[type='checkbox']"); //この li の中にある input のうち、type が checkbox のやつを1つ取る
-        if (checkboxes.checked) {
-          if (window.confirm("タスクを削除しますか？"))
-          list.remove();
-        };
+      //チェック済みのリストのみを集める
+      const targets = [...items].filter(li => {
+        const delcheckbox = li.querySelector("input[type='checkbox']");
+        return delcheckbox && delcheckbox.checked;
       });
+
+      //削除対象がない場合
+      if (targets.length === 0) {
+        alert("削除するタスクを選択してください");
+        return;
+      };
+
+      const Ok = window.confirm(`${targets.length}件のタスクを削除しますか？`);
+      if (!Ok) return;
+
+      //削除を実行
+      targets.forEach(li => li.remove());
+
       saveTasks();
     });
 
