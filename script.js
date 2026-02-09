@@ -21,6 +21,17 @@
     function addTask(text) {
       const li = document.createElement("li");
 
+      li.draggable = true;
+
+      li.addEventListener("dragstart", () => {
+        li.classList.add("dragging");
+      });
+
+      li.addEventListener("dragend", () => {
+        li.classList.remove("dragging");
+        saveTasks();
+      });
+
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
     
@@ -31,7 +42,6 @@
 
       li.appendChild(checkbox);
       li.appendChild(span);
-
       list.appendChild(li);
       
     //編集用のinput(最初は非表示)
@@ -107,3 +117,35 @@
       //"tasks"という引き出しの中に、JSON.stringify(tasks)という中身を入れるイメージ
       localStorage.setItem("tasks", JSON.stringify(tasks));
     };
+
+    //ドラッグアンドドロップの実行
+    list.addEventListener("dragover", (e) => {
+      e.preventDefault();
+
+      const dragging = document.querySelector(".dragging");
+      if (!dragging) return;
+
+      const afterElement = getDragAfterElement(list, e.clientY);
+
+        if (afterElement == null) {
+          list.appendChild(dragging);
+        } else {
+          list.insertBefore(dragging, afterElement);
+        };
+
+        function getDragAfterElement(container, y) {
+          const draggableElements = [...container.querySelectorAll("li:not(.dragging)")];
+
+          return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+
+            if (offset < 0 && offset > closest.offset) {
+              return {offset, element: child};
+            }
+            return closest;
+          }, {offset: Number.NEGATIVE_INFINITY, element: null}).element
+        };
+    });
+
+
